@@ -1,9 +1,13 @@
+from threading import Lock
+
 import shodan
 from shodan.cli.helpers import get_api_key
+import os
 
 from utilites import log_output, write_data
 import ec2
 
+FileLock = Lock()
 
 def before_run(provider):
     pass
@@ -18,9 +22,18 @@ def worker(provider, account):
     org = provider.get_client_for_root('organizations')
     describeAccount = org.describe_account(AccountId=account)
     networkTitle = account + " " + describeAccount["Account"]["Name"]
+
+    if describeAccount["Account"]['Status'] == 'SUSPENDED':
+        log_output("Account suspended.")
+        return
+
     log_output(networkTitle)
 
     ips = ec2.get_ips_for_account(provider, account, association="ALL")  # ASSOCIATED
+    with FileLock:
+        with open('AllIPs.txt', 'a') as f:
+            for ip in ips:
+                f.writelines(ip + '\n')
 
     api = shodan.Shodan(get_api_key())
     alerts = api.alerts(include_expired=True)
@@ -33,7 +46,6 @@ def worker(provider, account):
             api.delete_alert(alert["id"])
         return
 
-    save_ips_to_file(accountId=account, ips=ips)
 
     if not alert:
         alert = api.create_alert(name=networkTitle, ip=ips)
@@ -48,6 +60,8 @@ def worker(provider, account):
     else:
         api.edit_alert(alert["id"], ip=ips)
         log_output("Alert " + networkTitle + " updated with IPs " + str(ips))
+
+    save_ips_to_file(accountId=account, ips=ips)
 
 
 def get_alert(alerts, networkTitle):
@@ -88,7 +102,11 @@ def delete_alert_for_network(api, alerts, networkTitle):
 
 
 def save_ips_to_file(accountId, ips):
-    fileName = "Reports/" + accountId + "/" + accountId + "_all_public_ips"
+    accPath = "Reports/" + accountId + "/"
+    if os.path.exists(accPath) == False:
+        os.mkdir(accPath)
+
+    fileName = accPath + accountId + "_all_public_ips"
     write_data(fileName, ips)
 
 

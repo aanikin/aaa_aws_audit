@@ -122,8 +122,8 @@ if __name__ == '__main__':
     parser.add_argument("-A", "--afterfunction", help="function name to be run after run")
     parser.add_argument("-R", "--assumeRoleName", default="OrganizationAccountAccessRole",
                         help="name of the role to assume")
-    parser.add_argument("-AK", "--accessKey", help="function name to be run before run")
-    parser.add_argument("-SK", "--secretKey", help="function name to be run after run")
+    parser.add_argument("-AK", "--accessKey", help="AWS access key")
+    parser.add_argument("-SK", "--secretKey", help="AWS secret key")
     parser.add_argument("-DOP", "--degreeeOfParallelizm", help="set number of worker threads (1 - run in one thread)")
 
     # Read arguments from the command line
@@ -139,6 +139,7 @@ if __name__ == '__main__':
         raise Exception("Worker function name is not set!")
 
     rootAccountId = organizations.get_root_account()
+    # rootAccountId = '718111347139'
 
     if args.file:
         accounts = load_accounts_list(args.file)

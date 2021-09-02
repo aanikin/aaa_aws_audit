@@ -9,11 +9,12 @@ def audit_worker(provider, account):
     # This should go first - to have info about account, in case it closed/suspended
     org = provider.get_client_for_root('organizations')  # must have root account session
     org_reports = organizations_reports.Organizations_Reports(org, account)
-    org_reports.run()
+    accountInfo = org_reports.run()
 
-    iam = provider.get_client(account, 'iam')
-    iam_reports = IAM_Reports(iam, account)
-    iam_reports.run()
+    if accountInfo['Status'] != 'Suspended':
+        iam = provider.get_client(account, 'iam')
+        iam_reports = IAM_Reports(iam, account)
+        iam_reports.run()
 
 
 class IAM_Reports(BaseReport):

@@ -10,9 +10,17 @@ class ClientProvider(object):
                  assumeRole='OrganizationAccountAccessRole'):
         if not accessKey or not secretKey:
             self._rootSession = boto3.Session()
+            # sts = boto3.client('sts')
+            # response = sts.get_session_token(DurationSeconds=1200, SerialNumber='arn:aws:iam::718111347139:mfa/os33mgmt-aanikin', TokenCode='521639')
+
+            # self._rootSession = boto3.Session(aws_access_key_id=response['Credentials']['AccessKeyId'],
+            #                                  aws_secret_access_key=response['Credentials']['SecretAccessKey'],
+            #                                  aws_session_token=response['Credentials']['SessionToken'])
+
         else:
             self._rootSession = boto3.Session(aws_access_key_id=accessKey,
                                               aws_secret_access_key=secretKey)
+
 
         self.rootAccount = rootAccount
         self._assumeRole = assumeRole

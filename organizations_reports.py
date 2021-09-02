@@ -10,7 +10,7 @@ class Organizations_Reports(BaseReport):
             raise Exception('Provided client is not Organizations client!')
 
     def run(self):
-        self.describe_account()
+        return self.describe_account()
 
     def describe_account(self):
         reportName = inspect.stack()[0][3]
@@ -23,3 +23,5 @@ class Organizations_Reports(BaseReport):
 
         self.save_reports(reportName, metaData, response["Account"])
         print(self._accountId + ": " + reportName + " сomplete")
+
+        return response["Account"]
